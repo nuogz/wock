@@ -1,0 +1,22 @@
+{
+	"translation": {
+		"initMare": {
+			"before": "init Wock Face Before Mare",
+			"after": "init Wock Face After Mare",
+			"upgrade": "init Wock Upgrade Mare",
+			"close": "init Wock Connection Close Mare"
+		},
+		"face": {
+			"init": "init Wock Face {{-route}}",
+			"exec": "execute Wock Face {{-route}}",
+			"skipInit": {
+				"missRoute": "miss route, skiped",
+				"missHandle": "miss executable handle, skiped"
+			}
+		},
+		"handleClose": "code {{code}}, reason {{reason}}",
+		"castEvent": "cast Wock Event {{type}}",
+		"closeConnection": "close Wock Connection",
+		"heartbeatTimeout": "heartbeat timeout"
+	}
+}

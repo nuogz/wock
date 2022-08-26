@@ -1,0 +1,22 @@
+{
+	"translation": {
+		"initMare": {
+			"before": "加载 Wock接口前置中间件",
+			"after": "加载 Wock接口后置中间件",
+			"upgrade": "加载 Wock协议升级中间件",
+			"close": "加载 Wock连接关闭中间件"
+		},
+		"face": {
+			"init": "加载 Wock接口：{{-route}}",
+			"exec": "执行 Wock接口：{{-route}}",
+			"skipInit": {
+				"missRoute": "缺少 路由, 已跳过",
+				"missHandle": "缺少 可执行的处理函数, 已跳过"
+			}
+		},
+		"handleClose": "代码：{{code}}, 原因：{{reason}}",
+		"castEvent": "发送 Wock事件：{{type}}",
+		"closeConnection": "关闭 Wock连接",
+		"heartbeatTimeout": "心跳超时"
+	}
+}
