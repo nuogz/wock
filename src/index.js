@@ -2,7 +2,7 @@ export default class Wock {
 	constructor(url, logInfo, logError) {
 		this.url = url;
 
-		this.ping = false;
+		this.ping = true;
 		this.reopen = true;
 		this.opening = false;
 
@@ -221,3 +221,18 @@ export default class Wock {
 		if(handle instanceof Function) { return handle(...data); }
 	}
 }
+
+
+export let $wock;
+export const install = app => {
+	$wock = new Wock(
+		new URL('wock', location.origin).toString().replace(/^http/, 'ws'),
+		(console || {}).log,
+		(console || {}).error,
+	);
+
+	$wock.open('init');
+
+	app.config.globalProperties.$wock = $wock;
+	app.provide('$wock', $wock);
+};
