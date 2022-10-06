@@ -1,5 +1,8 @@
 export default class Wock {
-	constructor(url, logInfo, logError) {
+	/** @type {import('ws').WebSocket} */
+	WebSocket;
+
+	constructor(url, logInfo, logError, WebSocket) {
 		this.url = url;
 
 		this.ping = true;
@@ -14,6 +17,8 @@ export default class Wock {
 
 		this.logInfo = typeof logInfo == 'function' ? logInfo : () => { };
 		this.logError = typeof logError == 'function' ? logError : () => { };
+
+		this.WebSocket = WebSocket;
 	}
 
 	/**
@@ -23,7 +28,7 @@ export default class Wock {
 	open(reason) {
 		if(this.opening) { return; }
 
-		this.wock = new WebSocket(this.url);
+		this.wock = new (this.WebSocket ?? WebSocket)(this.url);
 
 		let pingOut;
 		let timeOut;
