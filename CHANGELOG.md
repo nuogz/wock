@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.1.1 - 2022.10.07 03
+* add `sideEffects` info to `package.json`
+
+
 ## v1.1.0 - 2022.10.07 03
 * export node.js side `WebSocket` form `ws`
 * support `wock` on node.js side by pass node.js side `WebSocket`

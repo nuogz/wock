@@ -1,6 +1,6 @@
 {
 	"name": "@nuogz/wock",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "web socket library based on ws and native WebSocket",
 	"author": "Nuogz",
 	"license": "LGPL-3.0-or-later",
@@ -15,6 +15,7 @@
 	"engines": {
 		"node": ">=14.18.1"
 	},
+	"sideEffects": false,
 	"main": "index.js",
 	"exports": {
 		".": "./index.js",
