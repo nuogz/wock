@@ -1,7 +1,7 @@
 # CHANGELOG
 
-## v1.1.1 - 2022.10.07 03
-* add `sideEffects` info to `package.json`
+## v1.2.0 - 2022.10.11 19
+* update `package.json` to better export browser-side codes
 
 
 ## v1.1.0 - 2022.10.07 03

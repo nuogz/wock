@@ -1,6 +1,6 @@
 {
 	"name": "@nuogz/wock",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"description": "web socket library based on ws and native WebSocket",
 	"author": "Nuogz",
 	"license": "LGPL-3.0-or-later",
@@ -16,10 +16,9 @@
 		"node": ">=14.18.1"
 	},
 	"sideEffects": false,
-	"main": "index.js",
-	"exports": {
-		".": "./index.js",
-		"./web": "./src/index.js"
+	"main": "./index.js",
+	"browser": {
+		"./index.js": "./src/index.js"
 	},
 	"files": [
 		"index.js",
@@ -27,12 +26,26 @@
 		"lib/**",
 		"locale/**"
 	],
-	"dependencies": {
+	"devDependencies": {
+		"eslint": "^8.24.0",
 		"@nuogz/class-inject-leveled-log": "^1.0.0",
 		"@nuogz/i18n": "^1.2.1",
 		"ws": "^8.9.0"
 	},
-	"devDependencies": {
-		"eslint": "^8.24.0"
+	"peerDependencies": {
+		"@nuogz/class-inject-leveled-log": "^1.0.0",
+		"@nuogz/i18n": "^1.2.1",
+		"ws": "^8.9.0"
+	},
+	"peerDependenciesMeta": {
+		"@nuogz/class-inject-leveled-log": {
+			"optional": true
+		},
+		"@nuogz/i18n": {
+			"optional": true
+		},
+		"ws": {
+			"optional": true
+		}
 	}
 }
