@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.0.0 - 2022.10.13 09
+* split client and server code from `wock@1.x` for better fucking import
+
+
 ## v1.2.0 - 2022.10.11 19
 * update `package.json` to better export browser-side codes
 

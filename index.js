@@ -6,13 +6,6 @@ import LoggerInjecter from '@nuogz/class-inject-leveled-log';
 
 import { TT } from './lib/i18n.js';
 
-import Wock from './src/index.js';
-
-
-
-export { Wock };
-
-export { WebSocket } from 'ws';
 
 
 export class WockConnection {
