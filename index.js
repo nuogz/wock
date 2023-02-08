@@ -1,41 +1,118 @@
 import { posix } from 'path';
 
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 
-import LoggerInjecter from '@nuogz/class-inject-leveled-log';
+import { injectBaseLogger } from '@nuogz/utility';
 
 import { TT } from './lib/i18n.js';
 
 
 
-export class WockConnection {
+/**
+ * @callback WockOpenEventHandle
+ * @param {Wock} wock
+ * @param {Wockman} wockman
+ * @returns {void}
+ */
+
+/**
+ * @callback WockErrorEventHandle
+ * @param {Wock} wock
+ * @param {Wockman} wockman
+ * @param {Error} error
+ * @returns {void}
+ */
+
+/**
+ * @callback WockCloseEventHandle
+ * @param {Wock} wock
+ * @param {Wockman} wockman
+ * @param {Buffer} reason
+ * @param {Number} code
+ * @returns {void}
+ */
+
+
+/**
+ * @typedef {Object} WockEvent
+ * @property {string} type
+ * @property {any} [data]
+ */
+
+/**
+ * @callback WockEventHandle
+ * @param {Wock} wock
+ * @param {...any} [data]
+ * @returns {void|Promise<void>}
+ */
+
+/**
+ * Wockman Option
+ * @typedef {Object} WockmanOption
+ * @property {string} [name]
+ * @property {boolean} [isHeartbeat]
+ * @property {number} [intervalPing]
+ * @property {number} [intervalWait]
+ * @property {string} [locale]
+ * @property {LoggerOption} [logger]
+ * - `undefined` for use `console` functions
+ * - `false` for close output
+ * - `Function` for output non-leveled logs
+ * - `{LogFunctions}` for leveled logs. The function will be called in the format of where, what and result. **ATTENTION** The Error instance will be passed in as one of the result arguments, not stringified error text.
+ */
+
+
+/**
+ * @typedef {import("@nuogz/utility/src/injectBaseLogger.js").LoggerLike} LoggerLike
+ */
+
+/**
+ * @typedef {import("@nuogz/utility/src/injectBaseLogger.js").LoggerOption} LoggerOption
+ */
+
+
+
+const hasOption = (key, object) => key in object && object[key] !== undefined;
+
+
+
+export class Wock {
+	/** @type {WebSocket} */
+	websocket;
+
+	/** @type {Wockman} */
+	wockman;
+
+
+	/** @type {number|NodeJS.Timeout} */
+	idPingout;
+	/** @type {number|NodeJS.Timeout} */
+	idWaitout;
+	/** @type {number} */
+	countWaitout = 0;
+
+
+
 	/**
-	 * @param {import('ws').WebSocket} websocket
+	 * @param {WebSocket} websocket
 	 * @param {Wockman} wockman
-	 * @param {Function[]} maresClose
+	 * @param {import("http").IncomingMessage} request
+	 * @param {import("stream").Duplex} socket
+	 * @param {Buffer} head
 	 */
-	constructor(websocket, wockman, maresClose) {
-		this.wock = websocket;
+	constructor(websocket, wockman, request, socket, head) {
+		this.websocket = websocket;
+
 		this.wockman = wockman;
 
-		this.maresClose = maresClose;
 
+		websocket.on('error', error => this.wockman.emitAll({ type: '$error', data: [error] }, this));
+		websocket.on('close', (code, reason) => this.wockman.emitAll({ type: '$close', data: [reason, code] }, this));
 
-		this.logTrace = wockman.logTrace;
-		this.logDebug = wockman.logDebug;
-		this.logInfo = wockman.logInfo;
-		this.logError = wockman.logError;
-		this.logWarn = wockman.logWarn;
-		this.logFatal = wockman.logFatal;
-		this.logMark = wockman.logMark;
-
-
-		this.onceOff = false;
-		websocket.on('error', error => this.handleClose(error));
-		websocket.on('close', (code, reason) => this.handleClose(wockman.TT('handleClose', { code: code ?? 0, reason: reason.toString() ?? '' })));
 
 		websocket.on('message', async raw => {
-			if(wockman.ping) { this.checkHeartbeat(); }
+			if(wockman.isHeartbeat) { this.checkHeartbeat(); }
+
 
 			let event = {};
 			try {
@@ -43,129 +120,196 @@ export class WockConnection {
 			}
 			catch(error) { return; }
 
-			const handle = this.wockman.handles[event.type];
-			if(handle) {
-				if(event.data instanceof Array) {
-					handle(this, ...event.data);
-				}
-				else {
-					handle(this, event.data);
-				}
-			}
+
+			this.wockman.emitAll(event, this);
 		});
 
-		if(wockman.ping) {
-			this.clearHeartbeat();
+
+		if(wockman.isHeartbeat) {
+			this.resetHeartbeat();
+
 			this.checkHeartbeat();
 		}
+
+
+		this.wockman.emitAll({ type: '$open' }, this);
 	}
 
 
-	/** send event */
+	/**
+	 * send a event include type and data
+	 * @param {string} type
+	 * @param {...any} [data]
+	 */
 	cast(type, ...data) {
+		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
+
+
 		try {
-			this.wock.send(JSON.stringify({ type, data }));
+			this.websocket.send(JSON.stringify({ type, data }));
 		}
 		catch(error) {
-			if(error.message.indexOf('CLOSED') == -1) {
-				this.logError(this.wockman.TT('castEvent', { type }), error);
-			}
+			if(typeof error?.message == 'string' && ~error.message.indexOf('CLOSED')) { return; }
+
+
+			this.logError(this.TT('castError'), error.message ?? error, error.stack ?? undefined);
 		}
 	}
 
-	/** wock close handle */
-	handleClose(reason) {
-		if(this.onceOff) { return; }
-		this.onceOff = true;
 
-		for(const func of this.maresClose) {
-			if(typeof func == 'function') {
-				func(reason, this);
-			}
-		}
 
-		if(reason instanceof Error) {
-			this.logError(this.wockman.TT('closeConnection'), reason);
-		}
-		else {
-			this.logTrace(this.wockman.TT('closeConnection'), reason);
-		}
+	/**
+	 * reset heartbeat timeout
+	 * @param {boolean} [isResetWaitout=true]
+	 */
+	resetHeartbeat(isResetWaitout = true) {
+		clearTimeout(this.idPingout);
+		clearTimeout(this.idWaitout);
 
-		this.clearHeartbeat();
+		this.idPingout = null;
+		this.idWaitout = null;
+
+		if(isResetWaitout) { this.countWaitout = 0; }
 	}
 
-	/** init heartbeat */
-	checkHeartbeat(clearCount = true) {
-		this.clearHeartbeat(clearCount);
+	/**
+	 * send heartbeat event regularly
+	 * @param {boolean} [isResetWaitout=true]
+	 */
+	checkHeartbeat(isResetWaitout = true) {
+		this.resetHeartbeat(isResetWaitout);
 
-		this.timeoutPing = setTimeout(() => {
+
+		this.idPingout = setTimeout(() => {
 			this.cast('ping');
 
-			this.timeoutWait = setTimeout(() => {
-				this.timeoutCount++;
 
-				if(this.timeoutCount >= 4) {
-					this.wock.close(4001, this.wockman.TT('heartbeatTimeout'));
+			this.idWaitout = setTimeout(() => {
+				this.countWaitout++;
+
+				if(this.countWaitout >= 4) {
+					this.websocket.close(4001, this.wockman.TT('heartbeatTimeout'));
 				}
 				else {
 					this.checkHeartbeat(false);
 				}
-			}, 24000);
-		}, 10000);
-	}
-
-	clearHeartbeat(clearCount = true) {
-		clearTimeout(this.timeoutPing);
-		clearTimeout(this.timeOutWait);
-
-		this.timeoutPing = null;
-		this.timeOutWait = null;
-
-		if(clearCount) { this.timeoutCount = 0; }
+			}, this.wockman.intervalWait);
+		}, this.wockman.intervalPing);
 	}
 }
 
 
+
 export default class Wockman {
-	/**
-	 * Database Option
-	 * @typedef {Object} WockmanOption
-	 * @property {string} [name]
-	 * @property {string} [locale]
-	 * @property {boolean} [ping]
-	 * @property {Function[]} [maresUpgrade=[]]
-	 * @property {Function[]} [maresClose=[]]
-	 * @property {import('@nuogz/class-inject-leveled-log').LogOption} [logger]
-	 * - `undefined` for use `console` functions
-	 * - `false` for close output
-	 * - `Function` for output non-leveled logs
-	 * - `{LogFunctions}` for leveled logs. The function will be called in the format of where, what and result. **ATTENTION** The Error instance will be passed in as one of the result arguments, not stringified error text.
-	 */
+	/** @type {WebSocket} */
+	static WebSocket = WebSocket;
+
+
+	/** @type {string} */
+	name;
+
+	/** @type {string} */
+	route;
+
+
+	/** @type {boolean} */
+	isHeartbeat;
+
+	/** @type {number} */
+	intervalPing = 10000;
+	/** @type {number} */
+	intervalWait = 24000;
+
+
+	/** @type {string} */
+	locale;
+	/** @type {LoggerLike} */
+	logTrace;
+	/** @type {LoggerLike} */
+	logDebug;
+	/** @type {LoggerLike} */
+	logInfo;
+	/** @type {LoggerLike} */
+	logError;
+	/** @type {LoggerLike} */
+	logWarn;
+	/** @type {LoggerLike} */
+	logFatal;
+	/** @type {LoggerLike} */
+	logMark;
+
+	TT;
+
+
+
+	/** @type {Object<string, WockEventHandle[]>} */
+	mapHandles = {
+		/** @type {WockOpenEventHandle[]} */
+		$open: [
+			(wock, wockman) => wockman.logTrace(wockman.TT('openOccur', { address: wock?.websocket?._socket?.address?.()?.address }))
+		],
+		/** @type {WockErrorEventHandle[]} */
+		$error: [
+			(wock, wockman, error) => wockman.logError(
+				wockman.TT('errorOccur', {
+					reason: error?.message
+						?? error
+						?? wockman.TT('unknownReason'),
+				}),
+				error?.stack ?? undefined,
+			)
+		],
+		/** @type {WockCloseEventHandle[]} */
+		$close: [
+			(wock, wockman, reason, code) => {
+				wock.resetHeartbeat();
+
+
+				wockman.logTrace(wockman.TT('closeOccur', {
+					reason: reason?.toString() || wockman.TT('unknownReason'),
+					code: code ?? wockman.TT('unknownCode'),
+				}));
+			},
+			(wock, wockman, reason, code) => wockman.wocks.delete(wock)
+		],
+		ping: [
+			wock => wock.cast('pong'),
+		],
+	};
+	/** @type {Object<string, WockEventHandle[]>} */
+	mapHandlesOnce = {};
+
+
+	/** @type {Set<Wock>} */
+	wocks = new Set();
+
+
 
 	/**
-	 * @param {import('net').Server} server
+	 * @param {import("http").Server} serverHTTP
 	 * @param {string} route the prefix of route
-	 * @param {WockmanOption} option
+	 * @param {WockmanOption} [option={}]
 	 */
-	constructor(server, route, option = {}) {
+	constructor(serverHTTP, route, option = {}) {
 		this.name = option.name;
-
-
-		this.locale = option.locale;
-		this.TT = TT(this.locale);
-
-
-		LoggerInjecter(this, Object.assign({ name: this.TT('Wockman') }, option.logger));
-
-
-		this.ping = ~~option.ping;
 		this.route = posix.join('/', route ?? '/');
 
 
-		const { maresUpgrade = [], maresClose = [] } = option;
+		this.isHeartbeat = hasOption('isHeartbeat', option) ? !!option.isHeartbeat : this.isHeartbeat;
+		this.intervalPing = hasOption('intervalPing', option) ? Number(option.intervalPing) : this.intervalPing;
+		this.intervalWait = hasOption('intervalWait', option) ? Number(option.intervalWait) : this.intervalWait;
 
 
-		const serverWock = this.server = new WebSocketServer({
+
+		this.locale = hasOption('locale', option) ? option.locale : this.locale;
+		this.TT = TT(this.locale);
+
+		injectBaseLogger(this, Object.assign({ name: this.TT('Wock') }, option.logger));
+
+
+		this.serverHTTP = serverHTTP;
+
+		const serverWebSocket = this.serverWebSocket = new WebSocketServer({
 			noServer: true,
 			perMessageDeflate: {
 				zlibDeflateOptions: {
@@ -174,7 +318,7 @@ export default class Wockman {
 					level: 4,
 				},
 				zlibInflateOptions: {
-					chunkSize: 10 * 1024
+					chunkSize: 10 * 1024,
 				},
 				clientNoContextTakeover: true,
 				serverNoContextTakeover: true,
@@ -186,60 +330,162 @@ export default class Wockman {
 
 
 		// mount under HTTP
-		server.on('upgrade', async (request, socket, head) => {
+		serverHTTP.on('upgrade', async (request, socket, head) => {
 			if(request.url.includes(this.route)) {
-				for(const mare of maresUpgrade) {
-					await mare(request, socket, head, this);
-				}
-
-				serverWock.handleUpgrade(request, socket, head, ws => serverWock.emit('connection', ws, request));
+				serverWebSocket.handleUpgrade(request, socket, head, websocket =>
+					this.wocks.add(
+						new Wock(websocket, this, request, socket, head)
+					)
+				);
 			}
 		});
-
-		/** @type {Set<WockConnection>} */
-		this.wockConnections = new Set();
-		const maresCloseAll = maresClose.concat([() => (reason, wock) => this.wockConnections.delete(wock)]);
-
-
-		serverWock.on('connection', websocket => this.wockConnections.add(
-			new WockConnection(websocket, this, maresCloseAll)
-		));
-
-
-		// events
-		this.handles = { ping(wock) { wock.cast('pong'); } };
 	}
 
 
-	/** boardcast */
-	cast(type, ...data) {
-		this.wockConnections.forEach(wockConnection => {
+	/**
+	 * send event to all connected websocket
+	 * @param {string} type
+	 * @param {...any} [data]
+	 */
+	castAll(type, ...data) {
+		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
+
+
+		this.wocks.forEach(wock => {
 			try {
-				wockConnection.cast(type, ...data);
+				wock.cast(type, ...data);
 			}
 			catch(error) { void 0; }
 		});
 	}
 
 
-	/** add wock event */
-	add(name, handle) {
-		if(!name && !(typeof handle == 'function')) { return false; }
+	/**
+	 * @param {WockEvent} event
+	 * @param {Wock} wock
+	 * @param {boolean} [isOnce=false]
+	 * @returns {void}
+	 */
+	async emit(event = {}, wock, isOnce = false) {
+		const { type, data = [] } = event;
+		if(!type) { return; }
 
-		this.handles[name] = handle;
-	}
-	/** delete wock event */
-	del(name) {
-		if(!name) { return false; }
 
-		delete this.handles[name];
+		const mapHandles = isOnce ? this.mapHandlesOnce : this.mapHandles;
+		const handles = mapHandles[type] ?? [];
+
+		if(isOnce) {
+			while(handles.length) {
+				const handle = handles.shift();
+
+				try {
+					await handle(wock, this, ...data);
+				}
+				catch(error) {
+					this.logError(this.TT('onceEventError', { type }), error.message, error.stack ?? undefined);
+				}
+			}
+		}
+		else {
+			for(const handle of handles) {
+				if(!handle) { continue; }
+
+				try {
+					await handle(wock, this, ...data);
+				}
+				catch(error) {
+					this.logError(this.TT('eventError', { type }), error.message, error.stack ?? undefined);
+				}
+			}
+		}
 	}
-	/** get wock event */
-	get(name) {
-		return this.handles[name];
+	/**
+	 * @param {WockEvent} event
+	 * @param {Wock} wock
+	 * @returns {void}
+	 */
+	emitAll(event, wock) {
+		this.emit(event, wock, true);
+
+		this.emit(event, wock);
 	}
-	/** run a wock event */
-	run(name, ...data) {
-		this.handles[name](...data);
+
+
+	/**
+	 * add a handle of event
+	 * @param {string} type
+	 * @param {WockEventHandle} handle
+	 * @param {boolean} [isOnce=false]
+	 * @returns {void}
+	 */
+	add(type, handle, isOnce = false) {
+		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
+		if(typeof handle != 'function') { throw Error(this.TT('paramError', { which: 'handle' })); }
+
+
+		const mapHandles = isOnce ? this.mapHandlesOnce : this.mapHandles;
+
+		(mapHandles[type] ?? (mapHandles[type] = [])).push(handle);
+	}
+	/**
+	 * delete a handle of event
+	 * @param {string} type
+	 * @param {WockEventHandle} handle
+	 * @param {boolean} [isOnce=false]
+	 * @returns {void}
+	 */
+	del(type, handle, isOnce = false) {
+		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
+		if(typeof handle != 'function') { throw Error(this.TT('paramError', { which: 'handle' })); }
+
+
+		const mapHandles = isOnce ? this.mapHandlesOnce : this.mapHandles;
+
+		const handles = mapHandles[type];
+		if(!handles) { return; }
+
+		const index = handles.indexOf(handle);
+		if(!~index) { return; }
+
+		handles.splice(index, 1);
+	}
+	/**
+	 * get the handles of event
+	 * @param {string} type
+	 * @param {boolean} [isOnce=false]
+	 * @returns {WockEventHandle[]}
+	 */
+	get(type, isOnce = false) {
+		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
+
+
+		const mapHandles = isOnce ? this.mapHandlesOnce : this.mapHandles;
+
+		return mapHandles[type];
+	}
+	/**
+	 * run the handles of event
+	 * @param {string} type
+	 * @param {Wock} [wock]
+	 * @param {boolean} [isOnce=false]
+	 * @param {...any} [data]
+	 */
+	run(type, wock, isOnce = false, ...data) {
+		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
+
+
+		this.emit({ type, data }, wock, isOnce);
+	}
+	/**
+	 * add a handle of event, and run it
+	 * @param {string} type
+	 * @param {WockEventHandle} handle
+	 * @param {Wock} [wock]
+	 * @param {...any} [data]
+	 */
+	aun(type, handle, wock, ...data) {
+		this.add(type, handle);
+
+		this.run(type, wock, false, ...data);
 	}
 }

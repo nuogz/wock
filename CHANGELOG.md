@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v3.0.0 - 2023.02.01 15
+* reorganize all code
+* improve interfaces
+* improve locales
+* add `d.ts`
+* bump up dependencies
+* use `@nuogz/utility`.`injectBaseLogger` instead `@nuogz/class-inject-leveled-log`
+* fix `.npmrc` to hoist `i18next` to emit `d.ts` correctly
+* fix bug on heartbeat timeout
+
+
 ## v2.0.0 - 2022.10.13 09
 * split client and server code from `wock@1.x` for better fucking import
 
