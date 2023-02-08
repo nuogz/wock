@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v3.0.0 - 2023.02.01 15
+## v3.0.0 - 2023.02.09 03
 * reorganize all code
 * improve interfaces
 * improve locales
