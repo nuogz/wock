@@ -1,13 +1,12 @@
-/// <reference types="node" />
 export class Wock {
     /**
      * @param {WebSocket} websocket
      * @param {Wockman} wockman
-     * @param {import("http").IncomingMessage} request
-     * @param {import("stream").Duplex} socket
+     * @param {import('http').IncomingMessage} request
+     * @param {import('stream').Duplex} socket
      * @param {Buffer} head
      */
-    constructor(websocket: WebSocket, wockman: Wockman, request: import("http").IncomingMessage, socket: import("stream").Duplex, head: Buffer);
+    constructor(websocket: WebSocket, wockman: Wockman, request: import('http').IncomingMessage, socket: import('stream').Duplex, head: Buffer);
     /** @type {WebSocket} */
     websocket: WebSocket;
     /** @type {Wockman} */
@@ -39,23 +38,23 @@ export default class Wockman {
     /** @type {WebSocket} */
     static WebSocket: WebSocket;
     /**
-     * @param {import("http").Server} serverHTTP
+     * @param {import('http').Server} serverHTTP
      * @param {string} route the prefix of route
      * @param {WockmanOption} [option={}]
      */
-    constructor(serverHTTP: import("http").Server, route: string, option?: WockmanOption);
-    /** @type {string} */
-    name: string;
+    constructor(serverHTTP: import('http').Server, route: string, option?: WockmanOption);
+    /** @type {import('http').Server} */
+    serverHTTP: import('http').Server;
     /** @type {string} */
     route: string;
+    /** @type {string} */
+    name: string;
     /** @type {boolean} */
     isHeartbeat: boolean;
     /** @type {number} */
     intervalPing: number;
     /** @type {number} */
     intervalWait: number;
-    /** @type {string} */
-    locale: string;
     /** @type {LoggerLike} */
     logTrace: LoggerLike;
     /** @type {LoggerLike} */
@@ -70,7 +69,6 @@ export default class Wockman {
     logFatal: LoggerLike;
     /** @type {LoggerLike} */
     logMark: LoggerLike;
-    TT: (key: import("i18next").TFunctionKeys, options: import("i18next").TOptions<import("i18next").StringMap>) => import("i18next").TFunctionDetailedResult<object>;
     /** @type {Object<string, WockEventHandle[]>} */
     mapHandles: {
         [x: string]: WockEventHandle[];
@@ -81,7 +79,6 @@ export default class Wockman {
     };
     /** @type {Set<Wock>} */
     wocks: Set<Wock>;
-    serverHTTP: import("http").Server<typeof import("http").IncomingMessage, typeof import("http").ServerResponse>;
     serverWebSocket: import("ws").Server<WebSocket>;
     /**
      * send event to all connected websocket
@@ -93,15 +90,15 @@ export default class Wockman {
      * @param {WockEvent} event
      * @param {Wock} wock
      * @param {boolean} [isOnce=false]
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    emit(event: WockEvent, wock: Wock, isOnce?: boolean): void;
+    emit(event: WockEvent, wock: Wock, isOnce?: boolean): Promise<void>;
     /**
      * @param {WockEvent} event
      * @param {Wock} wock
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    emitAll(event: WockEvent, wock: Wock): void;
+    emitAll(event: WockEvent, wock: Wock): Promise<void>;
     /**
      * add a handle of event
      * @param {string} type
@@ -158,7 +155,6 @@ export type WockmanOption = {
     isHeartbeat?: boolean;
     intervalPing?: number;
     intervalWait?: number;
-    locale?: string;
     /**
      * - `undefined` for use `console` functions
      * - `false` for close output
@@ -167,6 +163,6 @@ export type WockmanOption = {
      */
     logger?: LoggerOption;
 };
-export type LoggerLike = import("@nuogz/utility/src/injectBaseLogger.js").LoggerLike;
-export type LoggerOption = import("@nuogz/utility/src/injectBaseLogger.js").LoggerOption;
+export type LoggerLike = import('@nuogz/utility/src/injectBaseLogger.js').LoggerLike;
+export type LoggerOption = import('@nuogz/utility/src/injectBaseLogger.js').LoggerOption;
 import { WebSocket } from "ws";

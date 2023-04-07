@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v3.1.0 - 2023.04.07 14
+* change `emitAll` into async function
+* bump up `@nuogz/i18n` to `v3.1.0` and renew related code
+* renew locales
+
+
 ## v3.0.0 - 2023.02.09 03
 * reorganize all code
 * improve interfaces

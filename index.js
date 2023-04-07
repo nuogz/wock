@@ -1,10 +1,10 @@
-import { posix } from 'path';
+import { dirname, resolve, posix } from 'path';
+import { fileURLToPath } from 'url';
 
 import { WebSocketServer, WebSocket } from 'ws';
 
+import { loadI18NResource, TT } from '@nuogz/i18n';
 import { injectBaseLogger } from '@nuogz/utility';
-
-import { TT } from './lib/i18n.js';
 
 
 
@@ -53,7 +53,6 @@ import { TT } from './lib/i18n.js';
  * @property {boolean} [isHeartbeat]
  * @property {number} [intervalPing]
  * @property {number} [intervalWait]
- * @property {string} [locale]
  * @property {LoggerOption} [logger]
  * - `undefined` for use `console` functions
  * - `false` for close output
@@ -62,14 +61,14 @@ import { TT } from './lib/i18n.js';
  */
 
 
-/**
- * @typedef {import("@nuogz/utility/src/injectBaseLogger.js").LoggerLike} LoggerLike
- */
+/** @typedef {import('@nuogz/utility/src/injectBaseLogger.js').LoggerLike} LoggerLike */
+/** @typedef {import('@nuogz/utility/src/injectBaseLogger.js').LoggerOption} LoggerOption */
 
-/**
- * @typedef {import("@nuogz/utility/src/injectBaseLogger.js").LoggerOption} LoggerOption
- */
 
+
+loadI18NResource('@nuogz/wock-server', resolve(dirname(fileURLToPath(import.meta.url)), 'locale'));
+
+const T = TT('@nuogz/wock-server');
 
 
 const hasOption = (key, object) => key in object && object[key] !== undefined;
@@ -96,8 +95,8 @@ export class Wock {
 	/**
 	 * @param {WebSocket} websocket
 	 * @param {Wockman} wockman
-	 * @param {import("http").IncomingMessage} request
-	 * @param {import("stream").Duplex} socket
+	 * @param {import('http').IncomingMessage} request
+	 * @param {import('stream').Duplex} socket
 	 * @param {Buffer} head
 	 */
 	constructor(websocket, wockman, request, socket, head) {
@@ -142,7 +141,7 @@ export class Wock {
 	 * @param {...any} [data]
 	 */
 	cast(type, ...data) {
-		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
+		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().add')); }
 
 
 		try {
@@ -152,7 +151,7 @@ export class Wock {
 			if(typeof error?.message == 'string' && ~error.message.indexOf('CLOSED')) { return; }
 
 
-			this.logError(this.TT('castError'), error.message ?? error, error.stack ?? undefined);
+			this.logError(T('Error.cast'), error.message ?? error, error.stack ?? undefined);
 		}
 	}
 
@@ -188,7 +187,7 @@ export class Wock {
 				this.countWaitout++;
 
 				if(this.countWaitout >= 4) {
-					this.websocket.close(4001, this.wockman.TT('heartbeatTimeout'));
+					this.websocket.close(4001, T('heartbeatTimeout'));
 				}
 				else {
 					this.checkHeartbeat(false);
@@ -205,15 +204,20 @@ export default class Wockman {
 	static WebSocket = WebSocket;
 
 
-	/** @type {string} */
-	name;
+
+	/** @type {import('http').Server} */
+	serverHTTP;
 
 	/** @type {string} */
 	route;
 
 
+	/** @type {string} */
+	name = T('Wock');
+
+
 	/** @type {boolean} */
-	isHeartbeat;
+	isHeartbeat = false;
 
 	/** @type {number} */
 	intervalPing = 10000;
@@ -221,8 +225,7 @@ export default class Wockman {
 	intervalWait = 24000;
 
 
-	/** @type {string} */
-	locale;
+
 	/** @type {LoggerLike} */
 	logTrace;
 	/** @type {LoggerLike} */
@@ -238,23 +241,21 @@ export default class Wockman {
 	/** @type {LoggerLike} */
 	logMark;
 
-	TT;
-
 
 
 	/** @type {Object<string, WockEventHandle[]>} */
 	mapHandles = {
 		/** @type {WockOpenEventHandle[]} */
 		$open: [
-			(wock, wockman) => wockman.logTrace(wockman.TT('openOccur', { address: wock?.websocket?._socket?.address?.()?.address }))
+			(wock, wockman) => wockman.logTrace(T('Occur.open', { address: wock?.websocket?._socket?.address?.()?.address }))
 		],
 		/** @type {WockErrorEventHandle[]} */
 		$error: [
 			(wock, wockman, error) => wockman.logError(
-				wockman.TT('errorOccur', {
+				T('Occur.error', {
 					reason: error?.message
 						?? error
-						?? wockman.TT('unknownReason'),
+						?? T('unknownReason'),
 				}),
 				error?.stack ?? undefined,
 			)
@@ -265,9 +266,9 @@ export default class Wockman {
 				wock.resetHeartbeat();
 
 
-				wockman.logTrace(wockman.TT('closeOccur', {
-					reason: reason?.toString() || wockman.TT('unknownReason'),
-					code: code ?? wockman.TT('unknownCode'),
+				wockman.logTrace(T('Occur.close', {
+					reason: reason?.toString() || T('unknownReason'),
+					code: code ?? T('unknownCode'),
 				}));
 			},
 			(wock, wockman, reason, code) => wockman.wocks.delete(wock)
@@ -286,28 +287,27 @@ export default class Wockman {
 
 
 	/**
-	 * @param {import("http").Server} serverHTTP
+	 * @param {import('http').Server} serverHTTP
 	 * @param {string} route the prefix of route
 	 * @param {WockmanOption} [option={}]
 	 */
 	constructor(serverHTTP, route, option = {}) {
-		this.name = option.name;
+		this.serverHTTP = serverHTTP;
 		this.route = posix.join('/', route ?? '/');
 
 
+		this.name = hasOption('name', option) ? option.name : this.name;
 		this.isHeartbeat = hasOption('isHeartbeat', option) ? !!option.isHeartbeat : this.isHeartbeat;
 		this.intervalPing = hasOption('intervalPing', option) ? Number(option.intervalPing) : this.intervalPing;
 		this.intervalWait = hasOption('intervalWait', option) ? Number(option.intervalWait) : this.intervalWait;
 
 
 
-		this.locale = hasOption('locale', option) ? option.locale : this.locale;
-		this.TT = TT(this.locale);
-
-		injectBaseLogger(this, Object.assign({ name: this.TT('Wock') }, option.logger));
+		injectBaseLogger(this, Object.assign({ name: this.name }, option.logger));
 
 
-		this.serverHTTP = serverHTTP;
+
+
 
 		const serverWebSocket = this.serverWebSocket = new WebSocketServer({
 			noServer: true,
@@ -348,7 +348,7 @@ export default class Wockman {
 	 * @param {...any} [data]
 	 */
 	castAll(type, ...data) {
-		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
+		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().add')); }
 
 
 		this.wocks.forEach(wock => {
@@ -364,7 +364,7 @@ export default class Wockman {
 	 * @param {WockEvent} event
 	 * @param {Wock} wock
 	 * @param {boolean} [isOnce=false]
-	 * @returns {void}
+	 * @returns {Promise<void>}
 	 */
 	async emit(event = {}, wock, isOnce = false) {
 		const { type, data = [] } = event;
@@ -382,7 +382,7 @@ export default class Wockman {
 					await handle(wock, this, ...data);
 				}
 				catch(error) {
-					this.logError(this.TT('onceEventError', { type }), error.message, error.stack ?? undefined);
+					this.logError(T('Error.eventOnce', { type }), error.message, error.stack ?? undefined);
 				}
 			}
 		}
@@ -394,7 +394,7 @@ export default class Wockman {
 					await handle(wock, this, ...data);
 				}
 				catch(error) {
-					this.logError(this.TT('eventError', { type }), error.message, error.stack ?? undefined);
+					this.logError(T('Error.event', { type }), error.message, error.stack ?? undefined);
 				}
 			}
 		}
@@ -402,12 +402,12 @@ export default class Wockman {
 	/**
 	 * @param {WockEvent} event
 	 * @param {Wock} wock
-	 * @returns {void}
+	 * @returns {Promise<void>}
 	 */
-	emitAll(event, wock) {
-		this.emit(event, wock, true);
+	async emitAll(event, wock) {
+		await this.emit(event, wock, true);
 
-		this.emit(event, wock);
+		await this.emit(event, wock);
 	}
 
 
@@ -419,8 +419,8 @@ export default class Wockman {
 	 * @returns {void}
 	 */
 	add(type, handle, isOnce = false) {
-		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
-		if(typeof handle != 'function') { throw Error(this.TT('paramError', { which: 'handle' })); }
+		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().add')); }
+		if(typeof handle != 'function') { throw TypeError(T('ArgumentError.invalidHandle', { value: handle }, 'Wockman().add')); }
 
 
 		const mapHandles = isOnce ? this.mapHandlesOnce : this.mapHandles;
@@ -435,8 +435,8 @@ export default class Wockman {
 	 * @returns {void}
 	 */
 	del(type, handle, isOnce = false) {
-		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
-		if(typeof handle != 'function') { throw Error(this.TT('paramError', { which: 'handle' })); }
+		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().del')); }
+		if(typeof handle != 'function') { throw TypeError(T('ArgumentError.invalidHandle', { value: handle }, 'Wockman().del')); }
 
 
 		const mapHandles = isOnce ? this.mapHandlesOnce : this.mapHandles;
@@ -456,7 +456,7 @@ export default class Wockman {
 	 * @returns {WockEventHandle[]}
 	 */
 	get(type, isOnce = false) {
-		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
+		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().get')); }
 
 
 		const mapHandles = isOnce ? this.mapHandlesOnce : this.mapHandles;
@@ -471,7 +471,7 @@ export default class Wockman {
 	 * @param {...any} [data]
 	 */
 	run(type, wock, isOnce = false, ...data) {
-		if(!type) { throw Error(this.TT('paramError', { which: 'type' })); }
+		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().run')); }
 
 
 		this.emit({ type, data }, wock, isOnce);
@@ -484,6 +484,9 @@ export default class Wockman {
 	 * @param {...any} [data]
 	 */
 	aun(type, handle, wock, ...data) {
+		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().aun')); }
+
+
 		this.add(type, handle);
 
 		this.run(type, wock, false, ...data);
