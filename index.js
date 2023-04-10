@@ -42,7 +42,7 @@ import { injectBaseLogger } from '@nuogz/utility';
 /**
  * @callback WockEventHandle
  * @param {Wock} wock
- * @param {...any} [data]
+ * @param {...any} data
  * @returns {void|Promise<void>}
  */
 
@@ -138,7 +138,7 @@ export class Wock {
 	/**
 	 * send a event include type and data
 	 * @param {string} type
-	 * @param {...any} [data]
+	 * @param {...any} data
 	 */
 	cast(type, ...data) {
 		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().add')); }
@@ -345,7 +345,7 @@ export default class Wockman {
 	/**
 	 * send event to all connected websocket
 	 * @param {string} type
-	 * @param {...any} [data]
+	 * @param {...any} data
 	 */
 	castAll(type, ...data) {
 		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().add')); }
@@ -468,7 +468,7 @@ export default class Wockman {
 	 * @param {string} type
 	 * @param {Wock} [wock]
 	 * @param {boolean} [isOnce=false]
-	 * @param {...any} [data]
+	 * @param {...any} data
 	 */
 	run(type, wock, isOnce = false, ...data) {
 		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().run')); }
@@ -481,7 +481,7 @@ export default class Wockman {
 	 * @param {string} type
 	 * @param {WockEventHandle} handle
 	 * @param {Wock} [wock]
-	 * @param {...any} [data]
+	 * @param {...any} data
 	 */
 	aun(type, handle, wock, ...data) {
 		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().aun')); }

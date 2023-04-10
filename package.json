@@ -1,6 +1,6 @@
 {
 	"name": "@nuogz/wock-server",
-	"version": "3.1.0",
+	"version": "3.1.1",
 	"description": "WebSocket server library based on ws",
 	"author": "Nuogz",
 	"license": "LGPL-3.0-or-later",

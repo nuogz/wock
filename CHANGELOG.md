@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.1.1 - 2023.04.10 19
+* fix `d.ts`
+
+
 ## v3.1.0 - 2023.04.07 14
 * change `emitAll` into async function
 * bump up `@nuogz/i18n` to `v3.1.0` and renew related code

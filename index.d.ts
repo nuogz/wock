@@ -20,9 +20,9 @@ export class Wock {
     /**
      * send a event include type and data
      * @param {string} type
-     * @param {...any} [data]
+     * @param {...any} data
      */
-    cast(type: string, ...data?: any[]): void;
+    cast(type: string, ...data: any[]): void;
     /**
      * reset heartbeat timeout
      * @param {boolean} [isResetWaitout=true]
@@ -83,9 +83,9 @@ export default class Wockman {
     /**
      * send event to all connected websocket
      * @param {string} type
-     * @param {...any} [data]
+     * @param {...any} data
      */
-    castAll(type: string, ...data?: any[]): void;
+    castAll(type: string, ...data: any[]): void;
     /**
      * @param {WockEvent} event
      * @param {Wock} wock
@@ -127,17 +127,17 @@ export default class Wockman {
      * @param {string} type
      * @param {Wock} [wock]
      * @param {boolean} [isOnce=false]
-     * @param {...any} [data]
+     * @param {...any} data
      */
-    run(type: string, wock?: Wock, isOnce?: boolean, ...data?: any[]): void;
+    run(type: string, wock?: Wock, isOnce?: boolean, ...data: any[]): void;
     /**
      * add a handle of event, and run it
      * @param {string} type
      * @param {WockEventHandle} handle
      * @param {Wock} [wock]
-     * @param {...any} [data]
+     * @param {...any} data
      */
-    aun(type: string, handle: WockEventHandle, wock?: Wock, ...data?: any[]): void;
+    aun(type: string, handle: WockEventHandle, wock?: Wock, ...data: any[]): void;
 }
 export type WockOpenEventHandle = (wock: Wock, wockman: Wockman) => void;
 export type WockErrorEventHandle = (wock: Wock, wockman: Wockman, error: Error) => void;
@@ -146,7 +146,7 @@ export type WockEvent = {
     type: string;
     data?: any;
 };
-export type WockEventHandle = (wock: Wock, ...data?: any[]) => void | Promise<void>;
+export type WockEventHandle = (wock: Wock, ...data: any[]) => void | Promise<void>;
 /**
  * Wockman Option
  */
