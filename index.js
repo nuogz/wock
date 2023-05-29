@@ -61,8 +61,8 @@ import { injectBaseLogger } from '@nuogz/utility';
  */
 
 
-/** @typedef {import('@nuogz/utility/src/injectBaseLogger.js').LoggerLike} LoggerLike */
-/** @typedef {import('@nuogz/utility/src/injectBaseLogger.js').LoggerOption} LoggerOption */
+/** @typedef {import('@nuogz/utility/src/inject-base-logger.pure.js').LoggerLike} LoggerLike */
+/** @typedef {import('@nuogz/utility/src/inject-base-logger.pure.js').LoggerOption} LoggerOption */
 
 
 
@@ -307,8 +307,6 @@ export default class Wockman {
 
 
 
-
-
 		const serverWebSocket = this.serverWebSocket = new WebSocketServer({
 			noServer: true,
 			perMessageDeflate: {
@@ -348,7 +346,7 @@ export default class Wockman {
 	 * @param {...any} data
 	 */
 	castAll(type, ...data) {
-		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().add')); }
+		if(!type) { throw TypeError(T('ArgumentError.invalidType', { value: type }, 'Wockman().castAll')); }
 
 
 		this.wocks.forEach(wock => {

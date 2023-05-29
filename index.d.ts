@@ -163,6 +163,6 @@ export type WockmanOption = {
      */
     logger?: LoggerOption;
 };
-export type LoggerLike = import('@nuogz/utility/src/injectBaseLogger.js').LoggerLike;
-export type LoggerOption = import('@nuogz/utility/src/injectBaseLogger.js').LoggerOption;
-import { WebSocket } from "ws";
+export type LoggerLike = import('@nuogz/utility/src/inject-base-logger.pure.js').LoggerLike;
+export type LoggerOption = import('@nuogz/utility/src/inject-base-logger.pure.js').LoggerOption;
+import { WebSocket } from 'ws';

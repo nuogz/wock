@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v3.1.2 - 2023.05.29 16
+* bump up dependencies
+* fix little typo
+* bump up dependencies
+	* update `typescript` to `v5.x`, and renew jsdoc
+* use eslint flat config, and related config udpate
+	* use `eslint.config.js` instead `eslintrc.cjs`
+
+
 ## v3.1.1 - 2023.04.10 19
 * fix `d.ts`
 
