@@ -370,7 +370,7 @@ export default class Wockman {
 
 
 		const mapHandles = isOnce ? this.mapHandlesOnce : this.mapHandles;
-		const handles = mapHandles[type] ?? [];
+		const handles = [...(mapHandles[type] ?? [])];
 
 		if(isOnce) {
 			while(handles.length) {

@@ -1,6 +1,6 @@
 {
 	"name": "@nuogz/wock-server",
-	"version": "3.1.2",
+	"version": "3.1.3",
 	"description": "WebSocket server library based on ws",
 	"author": "Nuogz",
 	"license": "LGPL-3.0-or-later",
@@ -9,7 +9,9 @@
 		"url": "github:nuogz/wock-server"
 	},
 	"type": "module",
-	"typesSource": [],
+	"typesSource": [
+		"node"
+	],
 	"engines": {
 		"node": ">=14.18.1"
 	},
@@ -25,13 +27,13 @@
 	},
 	"dependencies": {
 		"@nuogz/i18n": "^3.2.1",
-		"@nuogz/utility": "^1.7.0",
+		"@nuogz/utility": "^1.7.1",
 		"ws": "^8.13.0"
 	},
 	"devDependencies": {
-		"@types/node": "^20.2.5",
-		"@types/ws": "^8.5.4",
-		"eslint": "^8.41.0",
-		"typescript": "^5.0.4"
+		"@types/node": "^20.4.1",
+		"@types/ws": "^8.5.5",
+		"eslint": "^8.44.0",
+		"typescript": "^5.1.6"
 	}
 }
