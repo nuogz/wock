@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.2.3 - 2023.12.07 10
+* fix `d.ts` finally
+
+
 ## v3.2.2 - 2023.12.07 10
 * fix `d.ts`
 
