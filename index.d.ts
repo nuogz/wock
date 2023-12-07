@@ -80,7 +80,7 @@ export default class Wockman {
     };
     /** @type {Set<Wock>} */
     wocks: Set<Wock>;
-    serverWebSocket: import("ws").Server<typeof import("ws"), typeof import("http").IncomingMessage>;
+    serverWebSocket: WSServer<typeof import("ws"), typeof import("http").IncomingMessage>;
     /**
      * send event to all connected websocket
      * @param {string} type
@@ -166,4 +166,4 @@ export type WockmanOption = {
 };
 export type LoggerLike = import('@nuogz/utility/src/inject-base-logger.pure.js').LoggerLike;
 export type LoggerOption = import('@nuogz/utility/src/inject-base-logger.pure.js').LoggerOption;
-import { WebSocket } from 'ws';
+import { WebSocket, Server as WSServer } from 'ws';
