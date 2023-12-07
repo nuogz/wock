@@ -10,7 +10,7 @@
 				"<node_internals>/**"
 			],
 			"cwd": "${fileDirname}",
-			"runtimeExecutable": "node.exe",
+			"runtimeExecutable": "node",
 			"program": "${fileBasename}",
 			"args": []
 		}

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v3.2.0 - 2023.12.07 09
+* tweak enviroment
+* bump up dependencies
+
+
 ## v3.1.3 - 2023.07.11 10
 * fix using unfixed arrays in loops when wockman emitting
 * bump up dependencies
