@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v3.2.1 - 2023.12.07 10
+* fix `d.ts`
+* tweak enviroment
+
+
 ## v3.2.0 - 2023.12.07 09
 * tweak enviroment
 * bump up dependencies

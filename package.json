@@ -1,6 +1,6 @@
 {
 	"name": "@nuogz/wock-server",
-	"version": "3.2.0",
+	"version": "3.2.1",
 	"description": "WebSocket server library based on ws",
 	"author": "DanoR",
 	"license": "LGPL-3.0-or-later",
@@ -25,7 +25,7 @@
 	],
 	"typings": "./index.d.ts",
 	"scripts": {
-		"emitDeclaration": "tsc ./index.js --declaration --emitDeclarationOnly --moduleResolution bundler --module esnext --target esnext --experimentalDecorators --strict --allowJs --jsx preserve"
+		"emitDeclaration": "tsc ./index.js --declaration --emitDeclarationOnly --moduleResolution nodenext --module nodenext --target esnext --experimentalDecorators --strict --allowJs --jsx preserve"
 	},
 	"dependencies": {
 		"@nuogz/i18n": "^3.3.1",

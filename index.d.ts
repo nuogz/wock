@@ -1,3 +1,4 @@
+/// <reference types="node" resolution-mode="require"/>
 export class Wock {
     /**
      * @param {WebSocket} websocket
@@ -27,12 +28,12 @@ export class Wock {
      * reset heartbeat timeout
      * @param {boolean} [isResetWaitout=true]
      */
-    resetHeartbeat(isResetWaitout?: boolean): void;
+    resetHeartbeat(isResetWaitout?: boolean | undefined): void;
     /**
      * send heartbeat event regularly
      * @param {boolean} [isResetWaitout=true]
      */
-    checkHeartbeat(isResetWaitout?: boolean): void;
+    checkHeartbeat(isResetWaitout?: boolean | undefined): void;
 }
 export default class Wockman {
     /** @type {WebSocket} */
@@ -42,7 +43,7 @@ export default class Wockman {
      * @param {string} route the prefix of route
      * @param {WockmanOption} [option={}]
      */
-    constructor(serverHTTP: import('http').Server, route: string, option?: WockmanOption);
+    constructor(serverHTTP: import('http').Server, route: string, option?: WockmanOption | undefined);
     /** @type {import('http').Server} */
     serverHTTP: import('http').Server;
     /** @type {string} */
@@ -79,7 +80,7 @@ export default class Wockman {
     };
     /** @type {Set<Wock>} */
     wocks: Set<Wock>;
-    serverWebSocket: import("ws").Server<WebSocket>;
+    serverWebSocket: import("ws").Server<typeof import("ws"), typeof import("http").IncomingMessage>;
     /**
      * send event to all connected websocket
      * @param {string} type
@@ -92,7 +93,7 @@ export default class Wockman {
      * @param {boolean} [isOnce=false]
      * @returns {Promise<void>}
      */
-    emit(event: WockEvent, wock: Wock, isOnce?: boolean): Promise<void>;
+    emit(event: WockEvent | undefined, wock: Wock, isOnce?: boolean | undefined): Promise<void>;
     /**
      * @param {WockEvent} event
      * @param {Wock} wock
@@ -106,7 +107,7 @@ export default class Wockman {
      * @param {boolean} [isOnce=false]
      * @returns {void}
      */
-    add(type: string, handle: WockEventHandle, isOnce?: boolean): void;
+    add(type: string, handle: WockEventHandle, isOnce?: boolean | undefined): void;
     /**
      * delete a handle of event
      * @param {string} type
@@ -114,14 +115,14 @@ export default class Wockman {
      * @param {boolean} [isOnce=false]
      * @returns {void}
      */
-    del(type: string, handle: WockEventHandle, isOnce?: boolean): void;
+    del(type: string, handle: WockEventHandle, isOnce?: boolean | undefined): void;
     /**
      * get the handles of event
      * @param {string} type
      * @param {boolean} [isOnce=false]
      * @returns {WockEventHandle[]}
      */
-    get(type: string, isOnce?: boolean): WockEventHandle[];
+    get(type: string, isOnce?: boolean | undefined): WockEventHandle[];
     /**
      * run the handles of event
      * @param {string} type
@@ -129,7 +130,7 @@ export default class Wockman {
      * @param {boolean} [isOnce=false]
      * @param {...any} data
      */
-    run(type: string, wock?: Wock, isOnce?: boolean, ...data: any[]): void;
+    run(type: string, wock?: Wock | undefined, isOnce?: boolean | undefined, ...data: any[]): void;
     /**
      * add a handle of event, and run it
      * @param {string} type
@@ -137,7 +138,7 @@ export default class Wockman {
      * @param {Wock} [wock]
      * @param {...any} data
      */
-    aun(type: string, handle: WockEventHandle, wock?: Wock, ...data: any[]): void;
+    aun(type: string, handle: WockEventHandle, wock?: Wock | undefined, ...data: any[]): void;
 }
 export type WockOpenEventHandle = (wock: Wock, wockman: Wockman) => void;
 export type WockErrorEventHandle = (wock: Wock, wockman: Wockman, error: Error) => void;
@@ -151,17 +152,17 @@ export type WockEventHandle = (wock: Wock, ...data: any[]) => void | Promise<voi
  * Wockman Option
  */
 export type WockmanOption = {
-    name?: string;
-    isHeartbeat?: boolean;
-    intervalPing?: number;
-    intervalWait?: number;
+    name?: string | undefined;
+    isHeartbeat?: boolean | undefined;
+    intervalPing?: number | undefined;
+    intervalWait?: number | undefined;
     /**
      * - `undefined` for use `console` functions
      * - `false` for close output
      * - `Function` for output non-leveled logs
      * - `{LogFunctions}` for leveled logs. The function will be called in the format of where, what and result. **ATTENTION** The Error instance will be passed in as one of the result arguments, not stringified error text.
      */
-    logger?: LoggerOption;
+    logger?: import("@nuogz/utility/src/inject-base-logger.pure.js").LoggerOption | undefined;
 };
 export type LoggerLike = import('@nuogz/utility/src/inject-base-logger.pure.js').LoggerLike;
 export type LoggerOption = import('@nuogz/utility/src/inject-base-logger.pure.js').LoggerOption;
