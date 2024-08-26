@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.3.1 - 2024.08.26 16
+* docs: fix docs
+
+
 ## v3.3.0 - 2024.08.26 16
 * refactor: renew codes to adapt to latest `@nuogz/i18n`
 * refactor: raname some varbiables

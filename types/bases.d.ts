@@ -17,7 +17,7 @@ export type WockEventHandle = (wock: Wock, ...data: any[]) => void | Promise<voi
 
 export type WockmanOption = {
 	name?: string | undefined;
-	isHeartbeat?: boolean | undefined;
+	willHeartbeat?: boolean | undefined;
 	intervalPing?: number | undefined;
 	intervalWait?: number | undefined;
 	/**
