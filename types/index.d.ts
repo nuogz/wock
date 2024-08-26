@@ -1,4 +1,3 @@
-/// <reference types="node" resolution-mode="require"/>
 export class Wock {
     /**
      * @param {WebSocket} websocket
@@ -7,7 +6,7 @@ export class Wock {
      * @param {import('stream').Duplex} socket
      * @param {Buffer} head
      */
-    constructor(websocket: WebSocket, wockman: Wockman, request: import('http').IncomingMessage, socket: import('stream').Duplex, head: Buffer);
+    constructor(websocket: WebSocket, wockman: Wockman, request: import("http").IncomingMessage, socket: import("stream").Duplex, head: Buffer);
     /** @type {WebSocket} */
     websocket: WebSocket;
     /** @type {Wockman} */
@@ -43,15 +42,17 @@ export default class Wockman {
      * @param {string} route the prefix of route
      * @param {WockmanOption} [option={}]
      */
-    constructor(serverHTTP: import('http').Server, route: string, option?: WockmanOption | undefined);
+    constructor(serverHTTP: import("http").Server, route: string, option?: import("./bases.d.ts").WockmanOption | undefined);
     /** @type {import('http').Server} */
-    serverHTTP: import('http').Server;
+    serverHTTP: import("http").Server;
+    /** @type {import('ws').WebSocketServer} */
+    serverWebSocket: import("ws").WebSocketServer;
     /** @type {string} */
     route: string;
     /** @type {string} */
     name: string;
     /** @type {boolean} */
-    isHeartbeat: boolean;
+    heartbeating: boolean;
     /** @type {number} */
     intervalPing: number;
     /** @type {number} */
@@ -80,7 +81,6 @@ export default class Wockman {
     };
     /** @type {Set<Wock>} */
     wocks: Set<Wock>;
-    serverWebSocket: WebSocketServer;
     /**
      * send event to all connected websocket
      * @param {string} type
@@ -140,30 +140,12 @@ export default class Wockman {
      */
     aun(type: string, handle: WockEventHandle, wock?: Wock | undefined, ...data: any[]): void;
 }
-export type WockOpenEventHandle = (wock: Wock, wockman: Wockman) => void;
-export type WockErrorEventHandle = (wock: Wock, wockman: Wockman, error: Error) => void;
-export type WockCloseEventHandle = (wock: Wock, wockman: Wockman, reason: Buffer, code: number) => void;
-export type WockEvent = {
-    type: string;
-    data?: any;
-};
-export type WockEventHandle = (wock: Wock, ...data: any[]) => void | Promise<void>;
-/**
- * Wockman Option
- */
-export type WockmanOption = {
-    name?: string | undefined;
-    isHeartbeat?: boolean | undefined;
-    intervalPing?: number | undefined;
-    intervalWait?: number | undefined;
-    /**
-     * - `undefined` for use `console` functions
-     * - `false` for close output
-     * - `Function` for output non-leveled logs
-     * - `{LogFunctions}` for leveled logs. The function will be called in the format of where, what and result. **ATTENTION** The Error instance will be passed in as one of the result arguments, not stringified error text.
-     */
-    logger?: import("@nuogz/utility/src/inject-base-logger.pure.js").LoggerOption | undefined;
-};
-export type LoggerLike = import('@nuogz/utility/src/inject-base-logger.pure.js').LoggerLike;
-export type LoggerOption = import('@nuogz/utility/src/inject-base-logger.pure.js').LoggerOption;
-import { WebSocket, WebSocketServer } from 'ws';
+export type WockOpenEventHandle = import("./bases.d.ts").WockOpenEventHandle;
+export type WockErrorEventHandle = import("./bases.d.ts").WockErrorEventHandle;
+export type WockCloseEventHandle = import("./bases.d.ts").WockCloseEventHandle;
+export type WockEvent = import("./bases.d.ts").WockEvent;
+export type WockEventHandle = import("./bases.d.ts").WockEventHandle;
+export type WockmanOption = import("./bases.d.ts").WockmanOption;
+export type LoggerLike = any;
+export type LoggerOption = any;
+import { WebSocket } from 'ws';

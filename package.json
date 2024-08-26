@@ -1,12 +1,12 @@
 {
 	"name": "@nuogz/wock-server",
-	"version": "3.2.3",
+	"version": "3.3.0",
 	"description": "WebSocket server library based on ws",
 	"author": "DanoR",
 	"license": "LGPL-3.0-or-later",
 	"repository": {
 		"type": "git",
-		"url": "github:nuogz/wock-server"
+		"url": "git+https://github.com/nuogz/wock-server.git"
 	},
 	"private": false,
 	"type": "module",
@@ -15,27 +15,31 @@
 	],
 	"sideEffects": false,
 	"engines": {
-		"node": ">=14.18.1"
+		"node": ">=20"
 	},
 	"main": "./index.js",
 	"files": [
 		"index.js",
 		"locale/**",
-		"**/*.d.ts"
+		"types/**"
 	],
-	"typings": "./index.d.ts",
+	"typings": "./types/index.d.ts",
 	"scripts": {
-		"emitDeclaration": "tsc ./index.js --declaration --emitDeclarationOnly --moduleResolution nodenext --module nodenext --target esnext --experimentalDecorators --strict --allowJs --jsx preserve"
+		"declare": "tsc",
+		"postdeclare": "copy /Y bases.d.ts types"
 	},
 	"dependencies": {
-		"@nuogz/i18n": "^3.3.1",
-		"@nuogz/utility": "^1.8.1",
-		"ws": "^8.14.2"
+		"@nuogz/i18n": "^3.7.4",
+		"@nuogz/utility": "^1.8.2",
+		"ws": "^8.18.0"
 	},
 	"devDependencies": {
-		"@types/node": "^20.10.3",
-		"@types/ws": "^8.5.10",
-		"eslint": "^8.55.0",
-		"typescript": "^5.3.3"
+		"@eslint/js": "^9.9.1",
+		"@stylistic/eslint-plugin-js": "^2.6.4",
+		"@types/node": "^20.16.1",
+		"@types/ws": "^8.5.12",
+		"eslint": "^9.9.1",
+		"globals": "^15.9.0",
+		"typescript": "^5.5.4"
 	}
 }

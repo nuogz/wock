@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v3.3.0 - 2024.08.26 16
+* refactor: renew codes to adapt to latest `@nuogz/i18n`
+* refactor: raname some varbiables
+* docs: renew locale with latest `@nuogz/i18n`
+* deps: bump up dependencies
+
+
 ## v3.2.3 - 2023.12.07 10
 * fix `d.ts` finally
 
