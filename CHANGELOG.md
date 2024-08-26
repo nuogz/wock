@@ -9,6 +9,7 @@
 * refactor: raname some varbiables
 * docs: renew locale with latest `@nuogz/i18n`
 * deps: bump up dependencies
+* chore: renew develop environments
 
 
 ## v3.2.3 - 2023.12.07 10
